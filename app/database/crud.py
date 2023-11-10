@@ -12,7 +12,7 @@ def get_todos(db: Session, skip: int = 0, limit: int = 100):
 
 
 def create_todo(db: Session, todo: schemas.TodoCreate):
-    db_todo = models.Todo(title=todo.title, description=todo.description, is_completed=todo.is_completed)
+    db_todo = models.Todo(title=todo.title, description=todo.description, is_completed=todo.is_completed, owner_id=todo.owner_id)
     db.add(db_todo)
     db.commit()
     db.refresh(db_todo)
@@ -43,3 +43,18 @@ def delete_todo(db: Session, todo_id: int):
     else:
         return False
 
+
+def create_user(db: Session, user: schemas.UserCreate):
+    db_user = models.User(username=user.username, hashed_password=user.hashed_password)
+    db.add(db_user)
+    db.commit()
+    db.refresh(db_user)
+    return db_user
+
+
+def get_users(db: Session):
+    return db.query(models.User).all()
+
+
+def get_user_by_username(db: Session, username: str):
+    return db.query(models.User).filter(models.User.username == username).first()
