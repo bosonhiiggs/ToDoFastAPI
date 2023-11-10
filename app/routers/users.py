@@ -7,8 +7,8 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 
 from config import ACCESS_TOKEN_EXPIRE_MINUTES
-from ..common import authenticate_user, get_hashed_password, create_access_token, get_current_user
-from ..dependencies import get_db
+from ..common import authenticate_user, get_hashed_password, create_access_token
+from ..dependencies import get_db, get_current_user
 from ..database.schemas import User, UserBase, UserCreate
 from ..database import crud
 
