@@ -1,13 +1,12 @@
 from datetime import datetime, timedelta
 
-from fastapi.security import OAuth2PasswordBearer
 from jose import jwt
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 
 from config import ALGORITHM, SECRET_KEY
 from .database.crud import get_user_by_username
-from .database.schemas import UserCreate
+from .database.schemas import UserCreate, User
 
 pwd_context = CryptContext(schemes=['bcrypt'], deprecated="auto")
 
@@ -39,3 +38,10 @@ def create_access_token(data: dict, expires_delta: timedelta | None = None):
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
+
+def check_todo_in_todos_current_user(user: User, todo_id: int):
+    todos = user.todos
+    for todo in todos:
+        if todo.id == todo_id:
+            return True
+    return False

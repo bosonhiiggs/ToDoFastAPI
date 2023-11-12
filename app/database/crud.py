@@ -12,7 +12,11 @@ def get_todos(db: Session, skip: int = 0, limit: int = 100):
 
 
 def create_todo(db: Session, todo: schemas.TodoCreate):
-    db_todo = models.Todo(title=todo.title, description=todo.description, is_completed=todo.is_completed, owner_id=todo.owner_id)
+    db_todo = models.Todo(title=todo.title,
+                          description=todo.description,
+                          is_completed=todo.is_completed,
+                          owner_id=todo.owner_id
+                          )
     db.add(db_todo)
     db.commit()
     db.refresh(db_todo)

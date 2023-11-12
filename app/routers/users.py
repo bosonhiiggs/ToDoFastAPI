@@ -7,9 +7,9 @@ from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 
 from config import ACCESS_TOKEN_EXPIRE_MINUTES
-from ..common import authenticate_user, get_hashed_password, create_access_token
+from ..common import authenticate_user, get_hashed_password, create_access_token, check_todo_in_todos_current_user
 from ..dependencies import get_db, get_current_user
-from ..database.schemas import User, UserBase, UserCreate
+from ..database.schemas import TodoBase, Todo, TodoCreate, User, UserBase, UserCreate
 from ..database import crud
 
 router = APIRouter(
@@ -47,12 +47,67 @@ async def get_user(current_user: Annotated[User, Depends(get_current_user)]):
     return current_user
 
 
+@router.post("/me/create")
+async def create_todo(
+        data: TodoBase,
+        current_user: Annotated[User, Depends(get_current_user)],
+        db: Session = Depends(get_db)
+):
+    user_id = current_user.id
+    todo = TodoCreate(title=data.title, description=data.description, is_completed=data.is_completed, owner_id=user_id)
+    todo_db = crud.create_todo(db=db, todo=todo)
+    return todo_db
+
+
 @router.get("/me/todos")
-async def get_user(current_user: Annotated[User, Depends(get_current_user)]):
+async def get_todos_current_user(current_user: Annotated[User, Depends(get_current_user)]):
     return {
         "username": current_user.username,
         "todos": current_user.todos
     }
+
+
+@router.get("/me/todos/{todo_id}")
+async def get_todo_current_user(todo_id: int, current_user: Annotated[User, Depends(get_current_user)]):
+    todos = current_user.todos
+    for todo in todos:
+        if todo.id == todo_id:
+            return todo
+    return HTTPException(status_code=400, detail="Invalid ID")
+
+
+@router.put("/me/todos/{todo_id}")
+async def put_todo_current_user(
+        todo_id: int,
+        current_user: Annotated[User, Depends(get_current_user)],
+        db: Session = Depends(get_db),
+        new_title: str | None = None,
+        new_description: str | None = None,
+        new_status: bool = None,
+):
+    if check_todo_in_todos_current_user(user=current_user, todo_id=todo_id):
+        todo = crud.update_todo(
+            db=db,
+            todo_id=todo_id,
+            new_title=new_title,
+            new_description=new_description,
+            new_status=new_status,
+        )
+        return todo
+    return HTTPException(status_code=400, detail="Invalid ID")
+
+
+@router.delete("/me/todos/{todo_id}")
+async def delete_todo_current_user(
+        todo_id: int,
+        current_user: Annotated[User, Depends(get_current_user)],
+        db: Session = Depends(get_db),
+):
+    if check_todo_in_todos_current_user(user=current_user, todo_id=todo_id):
+        delete_flag = crud.delete_todo(db=db, todo_id=todo_id)
+        if delete_flag:
+            return {"Notice": f"Todo with id={todo_id} was delete successfully"}
+    return HTTPException(status_code=400, detail="Invalid ID")
 
 
 @router.post("/create")
