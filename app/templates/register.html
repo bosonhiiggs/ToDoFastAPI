@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+
+{% block title %}
+	Register
+{% endblock %}
+
+{% block content %}
+
+    <h1>Register</h1>
+
+    <form id="register-form">
+        <label for="username">Username:</label>
+        <input type="text" id="username" name="username" required>
+
+        <label for="password">Password:</label>
+        <input type="password" id="password" name="password" required>
+
+        <label for="confirm-password">Confirm password:</label>
+        <input type="password" id="confirm-password" name="confirm-password" required>
+
+        <button type="submit">Register</button>
+    </form>
+
+    <p>Already have account? <a href="/">Login here</a></p>
+
+{% endblock %}
+
+{% block scripts %}
+    <script src="{{ url_for('static', path='js/register.js') }}"></script>
+{% endblock %}
