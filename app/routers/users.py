@@ -1,15 +1,16 @@
 from datetime import timedelta
 from typing import Annotated
 
+from forismatic import forismatic
 from sqlalchemy.orm import Session
 
 from fastapi import APIRouter, Depends, HTTPException
 from fastapi.security.oauth2 import OAuth2PasswordRequestForm
 
-from config import ACCESS_TOKEN_EXPIRE_MINUTES
+from ..config import ACCESS_TOKEN_EXPIRE_MINUTES
 from ..common import authenticate_user, get_hashed_password, create_access_token, check_todo_in_todos_current_user
 from ..dependencies import get_db, get_current_user
-from ..database.schemas import TodoBase, Todo, TodoCreate, User, UserBase, UserCreate
+from ..database.schemas import TodoBase, Todo, TodoCreate, User, UserBase, UserCreate, TodoUpdate
 from ..database import crud
 
 router = APIRouter(
@@ -61,10 +62,7 @@ async def create_todo(
 
 @router.get("/me/todos")
 async def get_todos_current_user(current_user: Annotated[User, Depends(get_current_user)]):
-    return {
-        "username": current_user.username,
-        "todos": current_user.todos
-    }
+    return current_user.todos
 
 
 @router.get("/me/todos/{todo_id}")
@@ -79,20 +77,26 @@ async def get_todo_current_user(todo_id: int, current_user: Annotated[User, Depe
 @router.put("/me/todos/{todo_id}")
 async def put_todo_current_user(
         todo_id: int,
+        update_data: TodoUpdate,
         current_user: Annotated[User, Depends(get_current_user)],
         db: Session = Depends(get_db),
-        new_title: str | None = None,
-        new_description: str | None = None,
-        new_status: bool = None,
+        # new_title: str | None = None,
+        # new_description: str | None = None,
+        # new_status: bool = None,
 ):
     if check_todo_in_todos_current_user(user=current_user, todo_id=todo_id):
         todo = crud.update_todo(
             db=db,
             todo_id=todo_id,
-            new_title=new_title,
-            new_description=new_description,
-            new_status=new_status,
+            new_title=update_data.new_title,
+            new_description=update_data.new_description,
+            new_status=update_data.new_status,
         )
+        if update_data.new_status:
+            f = forismatic.ForismaticPy()
+            phrase = f.get_Quote('ru')
+            response = [todo, phrase[0]]
+            return response
         return todo
     return HTTPException(status_code=400, detail="Invalid ID")
 

@@ -4,7 +4,7 @@ from jose import jwt
 from sqlalchemy.orm import Session
 from passlib.context import CryptContext
 
-from config import ALGORITHM, SECRET_KEY
+from .config import ALGORITHM, SECRET_KEY
 from .database.crud import get_user_by_username
 from .database.schemas import UserCreate, User
 

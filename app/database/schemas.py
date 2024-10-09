@@ -16,6 +16,12 @@ class TodoBase(BaseModel):
     is_completed: bool = False
 
 
+class TodoUpdate(BaseModel):
+    new_title: str | None = None
+    new_description: str | None = None
+    new_status: bool = False
+
+
 class TodoCreate(TodoBase):
     owner_id: int
 

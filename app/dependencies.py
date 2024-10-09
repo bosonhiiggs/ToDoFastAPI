@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from .database.crud import get_user_by_username
 from .database.database import SessionLocal
 from .database.schemas import TokenData
-from config import SECRET_KEY, ALGORITHM
+from .config import SECRET_KEY, ALGORITHM
 
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="users/token")
